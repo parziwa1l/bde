@@ -4,7 +4,7 @@ from django.views.decorators.http import require_http_methods
 
 from fame.serializers import FameSerializer
 from socialnetwork import api
-from socialnetwork.api import _get_social_network_user
+from socialnetwork.api import _get_social_network_user, experts, bullshitters
 from socialnetwork.models import SocialNetworkUsers
 
 
@@ -28,3 +28,15 @@ def fame_list(request):
         "user": user if user else "",
     }
     return render(request, "fame.html", context=context)
+
+@require_http_methods(["GET"])
+@login_required
+def experts_view(request):
+    experts_data = experts()  # Call the experts function to get the data
+    return render(request, "experts.html", {"experts": experts_data})  # Pass data to the template
+
+@require_http_methods(["GET"])
+@login_required
+def bullshitters_view(request):
+    bullshitter_data = bullshitters()  # Call the experts function to get the data
+    return render(request, "bullshitters.html", {"bullshitters": bullshitter_data})  # Pass data to the template
