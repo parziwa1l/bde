@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Experts</title>
+</head>
+<body>
+    <h1>Experts</h1>
+    {% for expertise_area, experts_list in experts.items %}
+        <div class="expertise-area">
+            <h2>{{ expertise_area.name }}</h2>
+            <ul class="experts-list">
+                {% for expert in experts_list %}
+                    <li>
+                        <div class="expert-details">
+                            <span>{{ expert.user.username }}</span>
+                            <span>Fame Level: {{ expert.fame_level_numeric }}</span>
+                            <span>Date Joined: {{ expert.date_joined|date:"Y-m-d" }}</span>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endfor %}
+</body>
+</html>
