@@ -1,6 +1,7 @@
+from collections import defaultdict
 from django.db.models import Q
-
-from fame.models import Fame, FameLevels
+from django.shortcuts import render
+from fame.models import ExpertiseAreas, Fame, FameLevels
 from socialnetwork.models import Posts, SocialNetworkUsers
 
 # general methods independent of html and REST views
@@ -8,7 +9,7 @@ from socialnetwork.models import Posts, SocialNetworkUsers
 
 
 def _get_social_network_user(user) -> SocialNetworkUsers:
-    """Given a FameUser, gets the social network user from the request. Assumes that the user is authenticated.Hello!"""
+    """Given a FameUser, gets the social network user from the request. Assumes that the user is authenticated."""
     try:
         user = SocialNetworkUsers.objects.get(id=user.id)
     except SocialNetworkUsers.DoesNotExist:
@@ -105,15 +106,49 @@ def submit_post(
     _at_least_one_expertise_area_contains_bullshit, _expertise_areas = (
         post.determine_expertise_areas_and_truth_ratings()
     )
-    post.published = not _at_least_one_expertise_area_contains_bullshit
+    
 
+    
+
+    ufame = Fame.objects.filter(user=user)
+    ufameneg= False
+    for exp in _expertise_areas:
+        expertise_area = exp ['expertise_area']
+        ufamearea = ufame.filter(expertise_area=expertise_area).first()
+
+        if ufamearea and ufamearea.fame_level.numeric_value<0:
+         ufameneg= True
+         break
+    post.published = not (_at_least_one_expertise_area_contains_bullshit or ufameneg)
     redirect_to_logout = False
-
-
-    #########################
-    # add your code here
-    #########################
-
+    
+    for epa in _expertise_areas:
+            expertise_area = epa['expertise_area']
+            truth_rating = epa['truth_rating']
+            
+            if truth_rating and truth_rating.numeric_value < 0:
+                ufamearea = ufame.filter(expertise_area=expertise_area).first()
+                
+                if ufamearea:
+                    currfame = ufamearea.fame_level
+                    try:
+                        newfame = currfame.get_next_lower_fame_level()
+                        ufamearea.fame_level = newfame
+                        ufamearea.save()
+                    except ValueError:
+                        user.is_active = False
+                        user.save()
+                        Posts.objects.filter(author=user).update(published=False)
+                        redirect_to_logout = True
+                        break
+                else:
+                    confuserr = FameLevels.objects.get(name="Confuser")
+                    Fame.objects.create(
+                        user=user,
+                        expertise_area=expertise_area,
+                        fame_level=confuserr
+                    )
+    
     post.save()
 
     return (
@@ -173,11 +208,24 @@ def experts():
     there is a tie, within that tie sort by date_joined (most recent first). Note that expertise areas with no expert
     may be omitted.
     """
-    pass
-    #########################
-    # add your code here
-    #########################
+    posfame= (
+        Fame.objects.filter(fame_level__numeric_value__gt=0).select_related(
+        'user','expertise_area','fame_level')
+    )
+    posfamearea = defaultdict(list)
+   
+    for fame in posfame:
+        posfamearea[fame.expertise_area].append({
+            'user': fame.user,
+            'fame_level_numeric': fame.fame_level.numeric_value,
+            'date_joined': fame.user.date_joined})
+    for e in posfamearea:
+        posfamearea[e].sort(key=lambda x: (-x['fame_level_numeric'], -x['date_joined'].timestamp()))
+       
 
+    return dict(posfamearea)
+    
+    
 
 
 def bullshitters():
@@ -187,8 +235,20 @@ def bullshitters():
     there is a tie, within that tie sort by date_joined (most recent first). Note that expertise areas with no expert
     may be omitted.
     """
-    pass
-    #########################
-    # add your code here
-    #########################
+    posfame= (
+        Fame.objects.filter(fame_level__numeric_value__lt=0).select_related(
+        'user','expertise_area','fame_level')
+    )
+    posfamearea = defaultdict(list)
+   
+    for fame in posfame:
+        posfamearea[fame.expertise_area].append({
+            'user': fame.user,
+            'fame_level_numeric': fame.fame_level.numeric_value,
+            'date_joined': fame.user.date_joined})
+    for expertise_area in posfamearea:
+        posfamearea[expertise_area].sort(key=lambda x: (x['fame_level_numeric'], -x['date_joined'].timestamp()))
 
+    
+    return dict(posfamearea)
+    
