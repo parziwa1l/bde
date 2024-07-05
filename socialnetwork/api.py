@@ -8,7 +8,7 @@ from socialnetwork.models import Posts, SocialNetworkUsers
 
 
 def _get_social_network_user(user) -> SocialNetworkUsers:
-    """Given a FameUser, gets the social network user from the request. Assumes that the user is authenticated."""
+    """Given a FameUser, gets the social network user from the request. Assumes that the user is authenticated.Hello!"""
     try:
         user = SocialNetworkUsers.objects.get(id=user.id)
     except SocialNetworkUsers.DoesNotExist:
