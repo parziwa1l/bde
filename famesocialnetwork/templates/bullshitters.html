@@ -2,6 +2,97 @@
 <html>
 <head>
     <title>Bullshitters</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #eef2f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            color: #444;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 2.5em;
+        }
+
+        .expertise-area {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 1000px;
+        }
+
+        .expertise-area h2 {
+            color: #555;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .experts-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .experts-list li {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            padding: 15px;
+            transition: transform 0.2s ease, background-color 0.3s ease;
+        }
+
+        .experts-list li:hover {
+            background-color: #f1f1f1;
+            transform: scale(1.02);
+        }
+
+        .expert-details {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .expert-details span {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .expert-details .username {
+           
+            font-size: 16px;
+            color: #0073e6;
+        }
+
+        .expert-details .fame-level {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .expert-details .date-joined {
+            font-size: 14px;
+            color: #999;
+        }
+
+        @media (min-width: 600px) {
+            .expert-details {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .expert-details span {
+                margin: 0 10px;
+            }
+        }
+    </style>
 </head>
 <body>
     <h1>Bullshitters</h1>
@@ -12,9 +103,9 @@
                 {% for expert in experts_list %}
                     <li>
                         <div class="expert-details">
-                            <span>{{ expert.user.username }}</span>
-                            <span>Fame Level: {{ expert.fame_level_numeric }}</span>
-                            <span>Date Joined: {{ expert.date_joined|date:"Y-m-d" }}</span>
+                            <span class="username">{{ expert.user.username }}</span>
+                            <span class="fame-level">Fame Level: {{ expert.fame_level_numeric }}</span>
+                            <span class="date-joined">Date Joined: {{ expert.date_joined|date:"Y-m-d" }}</span>
                         </div>
                     </li>
                 {% endfor %}

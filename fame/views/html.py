@@ -39,4 +39,4 @@ def experts_view(request):
 @login_required
 def bullshitters_view(request):
     bullshitter_data = bullshitters()  # Call the experts function to get the data
-    return render(request, "bullshitters.html", {"bullshitters": bullshitter_data})  # Pass data to the template
+    return render(request, "bullshitters.html", {"experts": bullshitter_data})  # Pass data to the template
