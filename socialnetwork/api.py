@@ -109,14 +109,14 @@ def submit_post(
     
 
     
-
-    ufame = Fame.objects.filter(user=user)
+    
+    ufame = Fame.objects.filter(user=user)#get the fame of the user
     ufameneg= False
-    for exp in _expertise_areas:
+    for exp in _expertise_areas:#loop to retrieve each expertise area from the given dictionary
         expertise_area = exp ['expertise_area']
-        ufamearea = ufame.filter(expertise_area=expertise_area).first()
+        ufamearea = ufame.filter(expertise_area=expertise_area).first()#matching exp area in user's fame
 
-        if ufamearea and ufamearea.fame_level.numeric_value<0:
+        if ufamearea and ufamearea.fame_level.numeric_value<0:#both must be satisfied , ufamearea is just to make sure that it is None and must have a value
          ufameneg= True
          break
     post.published = not (_at_least_one_expertise_area_contains_bullshit or ufameneg)
@@ -129,19 +129,19 @@ def submit_post(
             if truth_rating and truth_rating.numeric_value < 0:
                 ufamearea = ufame.filter(expertise_area=expertise_area).first()
                 
-                if ufamearea:
+                if ufamearea:#again checking if it is not empty
                     currfame = ufamearea.fame_level
                     try:
-                        newfame = currfame.get_next_lower_fame_level()
-                        ufamearea.fame_level = newfame
+                        newfame = currfame.get_next_lower_fame_level()#function to demote the fame level to next possible lower level
+                        ufamearea.fame_level = newfame # swapping the old one with the new one
                         ufamearea.save()
                     except ValueError:
-                        user.is_active = False
+                        user.is_active = False #if the fame level cannot get any lower, block the user, thats what we are doing here
                         user.save()
-                        Posts.objects.filter(author=user).update(published=False)
+                        Posts.objects.filter(author=user).update(published=False)#remove all the posts published by user
                         redirect_to_logout = True
                         break
-                else:
+                else:#if ufamarea is empty create a new expertise area with fame level confuser
                     confuserr = FameLevels.objects.get(name="Confuser")
                     Fame.objects.create(
                         user=user,
@@ -208,17 +208,20 @@ def experts():
     there is a tie, within that tie sort by date_joined (most recent first). Note that expertise areas with no expert
     may be omitted.
     """
+    #retrieve query set for all the positive fame levels only selecting what we need
     posfame= (
         Fame.objects.filter(fame_level__numeric_value__gt=0).select_related(
         'user','expertise_area','fame_level')
-    )
+    )#initialising an empty dictionary using in built python dictionary
     posfamearea = defaultdict(list)
-   
+
+   #loop to store the retrived query set into the inittialised dictionary 
     for fame in posfame:
         posfamearea[fame.expertise_area].append({
             'user': fame.user,
             'fame_level_numeric': fame.fame_level.numeric_value,
             'date_joined': fame.user.date_joined})
+        #sorting the dictionay after storing data
     for e in posfamearea:
         posfamearea[e].sort(key=lambda x: (-x['fame_level_numeric'], -x['date_joined'].timestamp()))
        
@@ -235,17 +238,21 @@ def bullshitters():
     there is a tie, within that tie sort by date_joined (most recent first). Note that expertise areas with no expert
     may be omitted.
     """
+    #retrieve query set for all the negative fame levels only selecting what we need
     posfame= (
         Fame.objects.filter(fame_level__numeric_value__lt=0).select_related(
         'user','expertise_area','fame_level')
-    )
+    ) 
+    #initialising an empty dictionary using in built python dictionary
     posfamearea = defaultdict(list)
    
+   #loop to store the retrived query set into the inittialised dictionary 
     for fame in posfame:
         posfamearea[fame.expertise_area].append({
             'user': fame.user,
             'fame_level_numeric': fame.fame_level.numeric_value,
             'date_joined': fame.user.date_joined})
+        #sorting the dictionay after storing data
     for expertise_area in posfamearea:
         posfamearea[expertise_area].sort(key=lambda x: (x['fame_level_numeric'], -x['date_joined'].timestamp()))
 
