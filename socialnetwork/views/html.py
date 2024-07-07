@@ -21,20 +21,17 @@ def timeline(request):
         posts = api.search(keyword, published=published)
     else:
         posts = api.timeline(user, published=published)
+    
+    followed_user_ids = set(user.follows.values_list('id', flat=True))  # Get followed user IDs
 
     context = {
         "posts": PostsSerializer(posts, many=True).data,
         "searchkeyword": keyword,
         "error": error,
+        "followed_user_ids": followed_user_ids,  # Add followed user IDs to context
     }
 
     return render(request, "timeline.html", context)
-
-def _get_social_network_user(user) -> SocialNetworkUsers:
-    try:
-        return SocialNetworkUsers.objects.get(id=user.id)
-    except SocialNetworkUsers.DoesNotExist:
-        raise PermissionError("User does not exist")
 
 @require_http_methods(["POST"])
 @login_required
