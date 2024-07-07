@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 from famesocialnetwork.views.html import home, MyLogoutView, MyLoginView
+from socialnetwork.views.html import follow, unfollow
 
 urlpatterns = [
     path(
@@ -41,5 +42,8 @@ urlpatterns = [
     path("fame/", include("fame.urls", namespace="fame")),  # reroute to fame app
     path(
         "sn/", include("socialnetwork.urls", namespace="sn")
-    ),  # reroute to social network app
+    ),
+    path("follow/", follow, name="follow"),
+    path("unfollow/", unfollow, name="unfollow"), 
+      # reroute to social network app
 ]

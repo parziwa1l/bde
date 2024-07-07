@@ -6,14 +6,12 @@
 {% block title %}Timeline{% endblock %}
 
 {% block body %}
-
-
     <br>
     <div class="card"
          style="margin-bottom: 20px; border-color: white; width: 300px; margin-left: auto; margin-right: 40px;">
         <form action="/sn/html/timeline" method="get">
             <div class="flex-container">
-                <input type="text" name="search" placeholder={{ searchkeyword }}>
+                <input type="text" name="search" placeholder="{{ searchkeyword }}">
                 <button type="submit" class="btn btn-secondary">Search</button>
             </div>
         </form>
@@ -44,7 +42,7 @@
             <p>{{ post.content|highlight:searchkeyword }}</p>
 
             <div class="flex-container">
-                {% for key,value in post.expertise_area_and_truth_ratings.items %}
+                {% for key, value in post.expertise_area_and_truth_ratings.items %}
                     {% if value.numeric_value < 0 %}
                         <div class="bullshit"><b>{{ key }}</b>: {{ value.name }}</div>
                     {% elif value.numeric_value > 0 %}
@@ -57,7 +55,7 @@
             <div class="flex-container">
                 <div><i class="fa-regular fa-comment" style="color:gray;"></i> {{ post.citations }}</div>
                 <div><i class="fa-solid fa-retweet" style="color:gray;"></i> {{ post.replies }}</div>
-                {% for key,value in post.user_ratings.items %}
+                {% for key, value in post.user_ratings.items %}
                     {% if key == "A" %}
                         <div><i class="fa-solid fa-thumbs-up" style="color:blue;"></i>&nbsp;{{ value }}</div>
                     {% elif key == "L" %}
@@ -68,8 +66,24 @@
                 {% endfor %}
                 <div><i class="fa-solid fa-chart-simple" style="color:gray;"></i> 0</div>
             </div>
+            <div class="flex-container">
+                {% if post.author.id != request.user.id %}
+                    {% if post.author.id not in followed_user_ids %}
+                        <form action="{% url 'follow' %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="user_to_follow_id" value="{{ post.author.id }}">
+                            <button type="submit" class="btn btn-primary">Follow</button>
+                        </form>
+                    {% else %}
+                        <form action="{% url 'unfollow' %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="user_to_unfollow_id" value="{{ post.author.id }}">
+                            <button type="submit" class="btn btn-danger">Unfollow</button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </div>
         </div>
     {% endfor %}
     <br><br>
-
 {% endblock %}
